@@ -13,6 +13,9 @@ import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/modules/settings/ui/settings_switch_list_tile.dart';
+import 'package:immich_mobile/modules/settings/utils/app_settings_update_hook.dart';
 
 @RoutePage()
 class AlbumOptionsPage extends HookConsumerWidget {
@@ -28,6 +31,9 @@ class AlbumOptionsPage extends HookConsumerWidget {
     final activityEnabled = useState(album.activityEnabled);
     final isProcessing = useProcessingOverlay();
     final isOwner = owner?.id == userId;
+
+    final currentWidgetAlbumID = useAppSettingsState(AppSettingsEnum.widgetAlbum);
+    final isCurrentWidgetAlbum = useValueNotifier(currentWidgetAlbumID == album.localId);
 
     void showErrorMessage() {
       context.pop();
@@ -180,6 +186,24 @@ class AlbumOptionsPage extends HookConsumerWidget {
       );
     }
 
+    onWidgetAlbumChange(bool isWidgetAlbum) {
+
+      if (isWidgetAlbum) {
+        currentWidgetAlbumID.value = album.localId;
+      } else {
+        currentWidgetAlbumID.value = null;
+      }
+      isCurrentWidgetAlbum.value = isWidgetAlbum;
+    }
+
+    buildWidgetSelect() {
+      return SettingsSwitchListTile(
+        valueNotifier: isCurrentWidgetAlbum,
+        title: "Set this album for the widget".tr(),
+        onChanged: onWidgetAlbumChange,
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -221,6 +245,8 @@ class AlbumOptionsPage extends HookConsumerWidget {
           buildSectionTitle("shared_album_section_people_title".tr()),
           buildOwnerInfo(),
           buildSharedUsersList(),
+          buildSectionTitle("widget".tr()),
+          buildWidgetSelect(),
         ],
       ),
     );

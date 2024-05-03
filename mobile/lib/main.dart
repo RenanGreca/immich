@@ -36,6 +36,7 @@ import 'package:immich_mobile/utils/migration.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_widgetkit/flutter_widgetkit.dart';
 
 void main() async {
   ImmichWidgetsBinding();
@@ -222,4 +223,20 @@ class MainWidget extends StatelessWidget {
       child: const ImmichApp(),
     );
   }
+}
+
+class HomeScreenWidget {
+  final String albumName;
+  final String imagePath;
+
+  HomeScreenWidget(this.albumName, this.imagePath);
+
+  HomeScreenWidget.fromJson(Map<String, dynamic> json)
+    : albumName = json['albumName'], imagePath = json['imagePath'];
+
+  Map<String, dynamic> toJson() =>
+    {
+      'albumName': albumName,
+      'imagePath': imagePath,
+    };
 }

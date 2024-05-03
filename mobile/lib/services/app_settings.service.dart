@@ -59,6 +59,7 @@ enum AppSettingsEnum<T> {
     false,
   ),
   enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, null, true),
+  widgetAlbum<String?>(StoreKey.widgetAlbum, null, null),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
