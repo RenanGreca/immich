@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
-import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder } from 'src/entities/album.entity';
@@ -10,8 +9,8 @@ import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
-  @ValidateUUID({ optional: true })
-  libraryId?: string;
+  @ValidateUUID({ optional: true, nullable: true })
+  libraryId?: string | null;
 
   @IsString()
   @IsNotEmpty()
@@ -34,9 +33,6 @@ class BaseSearchDto {
   isEncoded?: boolean;
 
   @ValidateBoolean({ optional: true })
-  isExternal?: boolean;
-
-  @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
   @ValidateBoolean({ optional: true })
@@ -44,9 +40,6 @@ class BaseSearchDto {
 
   @ValidateBoolean({ optional: true })
   isOffline?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  isReadOnly?: boolean;
 
   @ValidateBoolean({ optional: true })
   isVisible?: boolean;
@@ -160,18 +153,6 @@ export class MetadataSearchDto extends BaseSearchDto {
   @IsNotEmpty()
   @Optional()
   originalPath?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
-  @PropertyLifecycle({ deprecatedAt: 'v1.100.0' })
-  resizePath?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
-  @PropertyLifecycle({ deprecatedAt: 'v1.100.0' })
-  webpPath?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -323,6 +304,9 @@ export class MapMarkerDto {
 
   @ValidateBoolean({ optional: true })
   withPartners?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  withSharedAlbums?: boolean;
 }
 
 export class MemoryLaneDto {

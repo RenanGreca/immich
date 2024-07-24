@@ -294,17 +294,29 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final Set<AssetEntity> assetsFromExcludedAlbums = {};
 
     for (final album in state.selectedBackupAlbums) {
+      final assetCount = await album.albumEntity.assetCountAsync;
+
+      if (assetCount == 0) {
+        continue;
+      }
+
       final assets = await album.albumEntity.getAssetListRange(
         start: 0,
-        end: await album.albumEntity.assetCountAsync,
+        end: assetCount,
       );
       assetsFromSelectedAlbums.addAll(assets);
     }
 
     for (final album in state.excludedBackupAlbums) {
+      final assetCount = await album.albumEntity.assetCountAsync;
+
+      if (assetCount == 0) {
+        continue;
+      }
+
       final assets = await album.albumEntity.getAssetListRange(
         start: 0,
-        end: await album.albumEntity.assetCountAsync,
+        end: assetCount,
       );
       assetsFromExcludedAlbums.addAll(assets);
     }
@@ -362,7 +374,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
       await _getBackupAlbumsInfo();
-      await updateServerInfo();
+      await updateDiskInfo();
       await _updateBackupAssetCount();
     } else {
       log.warning("cannot get backup info - background backup is in progress!");
@@ -530,7 +542,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       _updatePersistentAlbumsSelection();
     }
 
-    updateServerInfo();
+    updateDiskInfo();
   }
 
   void _onUploadProgress(int sent, int total) {
@@ -567,13 +579,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  Future<void> updateServerInfo() async {
-    final serverInfo = await _serverInfoService.getServerInfo();
+  Future<void> updateDiskInfo() async {
+    final diskInfo = await _serverInfoService.getDiskInfo();
 
     // Update server info
-    if (serverInfo != null) {
+    if (diskInfo != null) {
       state = state.copyWith(
-        serverInfo: serverInfo,
+        serverInfo: diskInfo,
       );
     }
   }

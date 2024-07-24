@@ -16,7 +16,7 @@ import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
-import 'package:immich_mobile/shared/cache/widgets_binding.dart';
+import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -105,7 +105,7 @@ Future<Isar> loadDb() async {
       if (Platform.isIOS) IOSDeviceAssetSchema,
     ],
     directory: dir.path,
-    maxSizeMiB: 256,
+    maxSizeMiB: 1024,
   );
   Store.init(db);
   return db;
@@ -193,7 +193,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: true,
       home: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: false,

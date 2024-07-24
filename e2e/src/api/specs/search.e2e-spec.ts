@@ -1,4 +1,4 @@
-import { AssetFileUploadResponseDto, LoginResponseDto, deleteAssets, getMapMarkers, updateAsset } from '@immich/sdk';
+import { AssetMediaResponseDto, LoginResponseDto, deleteAssets, getMapMarkers, updateAsset } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -13,25 +13,25 @@ describe('/search', () => {
   let admin: LoginResponseDto;
   let websocket: Socket;
 
-  let assetFalcon: AssetFileUploadResponseDto;
-  let assetDenali: AssetFileUploadResponseDto;
-  let assetCyclamen: AssetFileUploadResponseDto;
-  let assetNotocactus: AssetFileUploadResponseDto;
-  let assetSilver: AssetFileUploadResponseDto;
-  let assetDensity: AssetFileUploadResponseDto;
-  // let assetPhiladelphia: AssetFileUploadResponseDto;
-  // let assetOrychophragmus: AssetFileUploadResponseDto;
-  // let assetRidge: AssetFileUploadResponseDto;
-  // let assetPolemonium: AssetFileUploadResponseDto;
-  // let assetWood: AssetFileUploadResponseDto;
-  let assetHeic: AssetFileUploadResponseDto;
-  let assetRocks: AssetFileUploadResponseDto;
-  let assetOneJpg6: AssetFileUploadResponseDto;
-  let assetOneHeic6: AssetFileUploadResponseDto;
-  let assetOneJpg5: AssetFileUploadResponseDto;
-  let assetGlarus: AssetFileUploadResponseDto;
-  let assetSprings: AssetFileUploadResponseDto;
-  let assetLast: AssetFileUploadResponseDto;
+  let assetFalcon: AssetMediaResponseDto;
+  let assetDenali: AssetMediaResponseDto;
+  let assetCyclamen: AssetMediaResponseDto;
+  let assetNotocactus: AssetMediaResponseDto;
+  let assetSilver: AssetMediaResponseDto;
+  let assetDensity: AssetMediaResponseDto;
+  // let assetPhiladelphia: AssetMediaResponseDto;
+  // let assetOrychophragmus: AssetMediaResponseDto;
+  // let assetRidge: AssetMediaResponseDto;
+  // let assetPolemonium: AssetMediaResponseDto;
+  // let assetWood: AssetMediaResponseDto;
+  // let assetGlarus: AssetMediaResponseDto;
+  let assetHeic: AssetMediaResponseDto;
+  let assetRocks: AssetMediaResponseDto;
+  let assetOneJpg6: AssetMediaResponseDto;
+  let assetOneHeic6: AssetMediaResponseDto;
+  let assetOneJpg5: AssetMediaResponseDto;
+  let assetSprings: AssetMediaResponseDto;
+  let assetLast: AssetMediaResponseDto;
   let cities: string[];
   let states: string[];
   let countries: string[];
@@ -49,14 +49,15 @@ describe('/search', () => {
       { filename: '/albums/nature/silver_fir.jpg' },
       { filename: '/formats/heic/IMG_2682.heic' },
       { filename: '/formats/jpg/el_torcal_rocks.jpg' },
-      { filename: '/formats/motionphoto/Samsung One UI 6.jpg' },
-      { filename: '/formats/motionphoto/Samsung One UI 6.heic' },
-      { filename: '/formats/motionphoto/Samsung One UI 5.jpg' },
-      { filename: '/formats/raw/Nikon/D80/glarus.nef', dto: { isReadOnly: true } },
+      { filename: '/formats/motionphoto/samsung-one-ui-6.jpg' },
+      { filename: '/formats/motionphoto/samsung-one-ui-6.heic' },
+      { filename: '/formats/motionphoto/samsung-one-ui-5.jpg' },
+
       { filename: '/metadata/gps-position/thompson-springs.jpg', dto: { isArchived: true } },
 
       // used for search suggestions
       { filename: '/formats/png/density_plot.png' },
+      { filename: '/formats/raw/Nikon/D80/glarus.nef' },
       { filename: '/formats/raw/Nikon/D700/philadelphia.nef' },
       { filename: '/albums/nature/orychophragmus_violaceus.jpg' },
       { filename: '/albums/nature/tanners_ridge.jpg' },
@@ -65,7 +66,7 @@ describe('/search', () => {
       // last asset
       { filename: '/albums/nature/wood_anemones.jpg' },
     ];
-    const assets: AssetFileUploadResponseDto[] = [];
+    const assets: AssetMediaResponseDto[] = [];
     for (const { filename, dto } of files) {
       const bytes = await readFile(join(testAssetDir, filename));
       assets.push(
@@ -93,9 +94,9 @@ describe('/search', () => {
       { latitude: 23.133_02, longitude: -82.383_04 }, // havana
       { latitude: 41.694_11, longitude: 44.833_68 }, // tbilisi
       { latitude: 31.222_22, longitude: 121.458_06 }, // shanghai
-      { latitude: 47.040_57, longitude: 9.068_04 }, // glarus
       { latitude: 38.9711, longitude: -109.7137 }, // thompson springs
       { latitude: 40.714_27, longitude: -74.005_97 }, // new york
+      { latitude: 47.040_57, longitude: 9.068_04 }, // glarus
       { latitude: 32.771_52, longitude: -89.116_73 }, // philadelphia
       { latitude: 31.634_16, longitude: -7.999_94 }, // marrakesh
       { latitude: 38.523_735_4, longitude: -78.488_619_4 }, // tanners ridge
@@ -123,9 +124,9 @@ describe('/search', () => {
       assetOneJpg6,
       assetOneHeic6,
       assetOneJpg5,
-      assetGlarus,
       assetSprings,
       assetDensity,
+      // assetGlarus,
       // assetPhiladelphia,
       // assetOrychophragmus,
       // assetRidge,
@@ -133,7 +134,7 @@ describe('/search', () => {
       // assetWood,
     ] = assets;
 
-    assetLast = assets.at(-1) as AssetFileUploadResponseDto;
+    assetLast = assets.at(-1) as AssetMediaResponseDto;
 
     await deleteAssets({ assetBulkDeleteDto: { ids: [assetSilver.id] } }, { headers: asBearerAuth(admin.accessToken) });
 
@@ -190,16 +191,7 @@ describe('/search', () => {
         dto: { size: -1.5 },
         expected: ['size must not be less than 1', 'size must be an integer number'],
       },
-      ...[
-        'isArchived',
-        'isFavorite',
-        'isReadOnly',
-        'isExternal',
-        'isEncoded',
-        'isMotion',
-        'isOffline',
-        'isVisible',
-      ].map((value) => ({
+      ...['isArchived', 'isFavorite', 'isEncoded', 'isMotion', 'isOffline', 'isVisible'].map((value) => ({
         should: `should reject ${value} not a boolean`,
         dto: { [value]: 'immich' },
         expected: [`${value} must be a boolean value`],
@@ -254,14 +246,6 @@ describe('/search', () => {
       {
         should: 'should search by isArchived (false)',
         deferred: () => ({ dto: { size: 1, isArchived: false }, assets: [assetLast] }),
-      },
-      {
-        should: 'should search by isReadOnly (true)',
-        deferred: () => ({ dto: { isReadOnly: true }, assets: [assetGlarus] }),
-      },
-      {
-        should: 'should search by isReadOnly (false)',
-        deferred: () => ({ dto: { size: 1, isReadOnly: false }, assets: [assetLast] }),
       },
       {
         should: 'should search by type (image)',
@@ -331,7 +315,7 @@ describe('/search', () => {
       {
         should: 'should search by originalFilename with spaces',
         deferred: () => ({
-          dto: { originalFileName: 'Samsung One', type: 'IMAGE' },
+          dto: { originalFileName: 'samsung-one', type: 'IMAGE' },
           assets: [assetOneJpg5, assetOneJpg6, assetOneHeic6],
         }),
       },
@@ -354,6 +338,13 @@ describe('/search', () => {
       {
         should: 'should search by model',
         deferred: () => ({ dto: { model: 'Canon EOS 7D' }, assets: [assetDenali] }),
+      },
+      {
+        should: 'should allow searching the upload library (libraryId: null)',
+        deferred: () => ({
+          dto: { libraryId: null, size: 1 },
+          assets: [assetLast],
+        }),
       },
     ];
 

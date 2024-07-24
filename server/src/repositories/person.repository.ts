@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import {
@@ -14,7 +15,6 @@ import {
   PersonStatistics,
   UpdateFacesData,
 } from 'src/interfaces/person.interface';
-import { asVector } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationOptions, paginate } from 'src/utils/pagination';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
@@ -26,6 +26,7 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
+    @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
   ) {}
 
   @GenerateSql({ params: [{ oldPersonId: DummyValue.UUID, newPersonId: DummyValue.UUID }] })
@@ -103,6 +104,9 @@ export class PersonRepository implements IPersonRepository {
       where: { assetId },
       relations: {
         person: true,
+      },
+      order: {
+        boundingBoxX1: 'ASC',
       },
     });
   }
@@ -246,10 +250,8 @@ export class PersonRepository implements IPersonRepository {
   }
 
   async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
-    const res = await this.assetFaceRepository.insert(
-      entities.map((entity) => ({ ...entity, embedding: () => asVector(entity.embedding, true) })),
-    );
-    return res.identifiers.map((row) => row.id);
+    const res = await this.assetFaceRepository.save(entities);
+    return res.map((row) => row.id);
   }
 
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
@@ -266,5 +268,14 @@ export class PersonRepository implements IPersonRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
     return this.assetFaceRepository.findOneBy({ personId });
+  }
+
+  @GenerateSql()
+  async getLatestFaceDate(): Promise<string | undefined> {
+    const result: { latestDate?: string } | undefined = await this.jobStatusRepository
+      .createQueryBuilder('jobStatus')
+      .select('MAX(jobStatus.facesRecognizedAt)::text', 'latestDate')
+      .getRawOne();
+    return result?.latestDate;
   }
 }

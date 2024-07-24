@@ -77,13 +77,9 @@ const config = {
       },
       announcementBar: {
         id: 'site_announcement_immich',
-        content:
-          'Immich joins Futo! Read about the announcement <a href="/blog/2024/immich-core-team-goes-fulltime">here</a>.',
-        backgroundColor: '#4250af',
-        textColor: 'white',
-        // content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use it as <strong>the only way</strong> to store your photos and videos!`,
-        // backgroundColor: '#593f00',
-        // textColor: '#ffefc9',
+        content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use it as <strong>the only way</strong> to store your photos and videos!`,
+        backgroundColor: '#593f00',
+        textColor: '#ffefc9',
         isCloseable: false,
       },
       docs: {
@@ -96,17 +92,22 @@ const config = {
           alt: 'Immich Logo',
           src: 'img/immich-logo-inline-light.png',
           srcDark: 'img/immich-logo-inline-dark.png',
+          className: 'rounded-none',
         },
         items: [
+          {
+            type: 'custom-versionSwitcher',
+            position: 'right',
+          },
           {
             to: '/docs/overview/introduction',
             position: 'right',
             label: 'Docs',
           },
           {
-            to: '/milestones',
+            to: '/roadmap',
             position: 'right',
-            label: 'Milestones',
+            label: 'Roadmap',
           },
           {
             to: '/docs/api',
@@ -121,6 +122,11 @@ const config = {
           {
             href: 'https://github.com/immich-app/immich',
             label: 'GitHub',
+            position: 'right',
+          },
+          {
+            href: 'https://discord.immich.app',
+            label: 'Discord',
             position: 'right',
           },
         ],
@@ -146,7 +152,7 @@ const config = {
             items: [
               {
                 label: 'Discord',
-                href: 'https://discord.com/invite/D8JsnBEuKb',
+                href: 'https://discord.immich.app',
               },
               {
                 label: 'Reddit',

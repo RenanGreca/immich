@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ArrayNotEmpty, IsArray, IsEnum, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
-import { PropertyLifecycle } from 'src/decorators';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
@@ -24,13 +24,17 @@ export class AlbumUserAddDto {
 }
 
 export class AddUsersDto {
-  @ValidateUUID({ each: true, optional: true })
-  @ArrayNotEmpty()
-  @PropertyLifecycle({ deprecatedAt: 'v1.102.0' })
-  sharedUserIds?: string[];
-
   @ArrayNotEmpty()
   albumUsers!: AlbumUserAddDto[];
+}
+
+class AlbumUserCreateDto {
+  @ValidateUUID()
+  userId!: string;
+
+  @IsEnum(AlbumUserRole)
+  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole' })
+  role!: AlbumUserRole;
 }
 
 export class CreateAlbumDto {
@@ -42,8 +46,11 @@ export class CreateAlbumDto {
   @Optional()
   description?: string;
 
-  @ValidateUUID({ optional: true, each: true })
-  sharedWithUserIds?: string[];
+  @Optional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AlbumUserCreateDto)
+  albumUsers?: AlbumUserCreateDto[];
 
   @ValidateUUID({ optional: true, each: true })
   assetIds?: string[];
@@ -120,8 +127,6 @@ export class AlbumResponseDto {
   updatedAt!: Date;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
-  @PropertyLifecycle({ deprecatedAt: 'v1.102.0' })
-  sharedUsers!: UserResponseDto[];
   albumUsers!: AlbumUserResponseDto[];
   hasSharedLink!: boolean;
   assets!: AssetResponseDto[];
@@ -175,7 +180,6 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
     id: entity.id,
     ownerId: entity.ownerId,
     owner: mapUser(entity.owner),
-    sharedUsers,
     albumUsers: albumUsersSorted,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,

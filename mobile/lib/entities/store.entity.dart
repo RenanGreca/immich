@@ -182,6 +182,7 @@ enum StoreKey<T> {
   advancedTroubleshooting<bool>(114, type: bool),
   logLevel<int>(115, type: int),
   preferRemoteImage<bool>(116, type: bool),
+  loopVideo<bool>(117, type: bool),
   widgetAlbum<String?>(117, type: String?),
   // map related settings
   mapShowFavoriteOnly<bool>(118, type: bool),
@@ -193,6 +194,7 @@ enum StoreKey<T> {
   mapThemeMode<int>(124, type: int),
   mapwithPartners<bool>(125, type: bool),
   enableHapticFeedback<bool>(126, type: bool),
+  customHeaders<String>(127, type: String),
   ;
 
   const StoreKey(

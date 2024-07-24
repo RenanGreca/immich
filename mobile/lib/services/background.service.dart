@@ -20,7 +20,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
-import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider_ios/path_provider_ios.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -69,10 +69,8 @@ class BackgroundService {
       final callback = PluginUtilities.getCallbackHandle(_nativeEntry)!;
       final String title =
           "backup_background_service_default_notification".tr();
-      final bool ok = await _foregroundChannel.invokeMethod(
-        'enable',
-        [callback.toRawHandle(), title, immediate, getServerUrl()],
-      );
+      final bool ok = await _foregroundChannel
+          .invokeMethod('enable', [callback.toRawHandle(), title, immediate]);
       return ok;
     } catch (error) {
       return false;
@@ -593,6 +591,7 @@ enum IosBackgroundTask { fetch, processing }
 /// entry point called by Kotlin/Java code; needs to be a top-level function
 @pragma('vm:entry-point')
 void _nativeEntry() {
+  HttpOverrides.global = HttpSSLCertOverride();
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
   BackgroundService backgroundService = BackgroundService();
